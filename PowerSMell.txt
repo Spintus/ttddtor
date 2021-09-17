@@ -1,0 +1,131 @@
+Keep google up.
+
+Watch out for curly braces:
+  • Powershell has two distinct parsing modes:
+
+      *Argument mode* is line-oriented (shell-like): It applies to a single command invoking an executable/script/cmdlet/alias/function,
+      or a series of such commands chained together with pipes ( | ).
+        Each command must be on its own line. The only line continuation possible within a single such command is done with an escape
+        character ( ` ), which is considered bad practice (by me, willm, because it bites me when reformatting).
+        Breaking between commands/pipes is preferable.
+
+      *Expression mode* works as it does in other languages; whitespace is insignificant, and as long as a construct is syntactically
+      complete it can straddle any number of lines.
+
+    NOTE: It is important to understand that a single command can involve a mix of both parsing modes; when passing a script block to
+    a cmdlet (which parses arguments in argument mode), the script block is parsed as an argument, but the contents of the script
+    block themselves are parsed in expression mode. For example, see this (one) command:
+
+      $myArray | ForEach-Object {
+        if ($_ -match $myExpression)
+        {
+          $_.Matched = $true
+        }
+      }
+
+      'Foreach-Object' is a cmdlet and therefore parsed in argument mode. Thus, the script block is an argument and must be on the same line.
+      (A 'Foreach-Object' followed by a newline will prompt the host for arguments instead of looking on subsequent lines for the open brace.)
+
+      The scriptblock designated by those braces however is parsed in expression mode, allowing it to be spread across multiple lines.
+
+      See: msdn:About_Parsing.
+
+      (If you like k&r/1tbs, don't worry about it. I'm an Allman (Whitesmiths) guy though so fml i guess)
+
+Landmines:
+  • It feels like your cmd.exe commands work, but it's never that easy.
+      ○ If you call something in sys32 directly or implicitly, it's exactly as clunky as it's always been.
+          except stdout/stderr make even less sense than before.
+      ○ Don't use SET. It's now a slow alias of an override of a wrapped method call to something else (with a config! :D).
+      ○ %-designated variables don't work. Must access these by using $env:<variable name> (but be careful with scopes).
+      ○ Batch files suck to work with. See: https://stackoverflow.com/questions/20645326/safest-way-to-run-bat-file-from-powershell-script
+      ○ And you can fall into all sorts of funky syntax traps unrelated to the parsing weirdness above.
+      ○ Just don't assume cmd.exe commands will work at all.
+
+  • Param inheritance:
+      All imported *script* modules suffer from a massive known
+      issue in Powershell (All versions as of Core 7.1)!
+
+      In short: the common parameter inheritence mechanism is fundamentally broken
+      for advanced functions under certain circumstances. For reference, see:
+      https://github.com/PowerShell/PowerShell/issues/4568
+
+      For example: When $ErrorActionPreference is set to 'Stop', compiled cmdlets
+      will honor that preference by terminating on most* errors. Advanced functions
+      imported from a module however, which are meant to behave identically to
+      compiled cmdlets, will not. For 'why', if you want brain damage, see:
+      https://seeminglyscience.github.io/powershell/2017/09/30/invocation-operators-states-and-scopes
+
+      *https://github.com/MicrosoftDocs/PowerShell-Docs/issues/1583
+
+      This means preference variables are unreliable! For critical scripts, caution
+      MUST be taken to ensure good behavior in regard to preference variables.
+
+  • Everything sucks in the standard host console:
+      ○ See: psBootstrap module: DisableConsoleQuickEdit func class
+      ○ Also: https://stackoverflow.com/questions/30418886/how-and-why-does-quickedit-mode-in-command-prompt-freeze-applications
+          I could kill someone because of this^ choise. I understand why, but I don't like it. Your Honor, this file is exhibit 1.
+
+      ○ See also: everything to do with the 'ISE vs standard console' stuff
+          https://devblogs.microsoft.com/powershell/differences-between-the-ise-and-powershell-console/
+          https://livebook.manning.com/book/powershell-in-depth/chapter-2/
+          https://www.pdq.com/blog/powershell-host-vs-shell/
+          https://powershell.org/2013/10/the-shell-vs-the-host/
+              If you need to touch log4ps_v4, God rest your soul
+
+      ○ I'm still angry about host vs shell. Why are there 500 different ways to spin-up ps?
+          Seriously and vsC is special too at least there's Pester
+              (which ALSO hacks around this)
+
+  • CIL/CLR/CLS(wtf) noncompliance makes me sad.
+      Basically only sort-of m$'s fault but this is my txt file, fite me
+
+      https://www.catapultsystems.com/blogs/using-non-cls-compliant-types-in-powershell/
+          And reflection just makes a new problem down a level: You can't rely on method signatures to resolve correctly.
+              https://stackoverflow.com/questions/13084176/powershell-method-overload-resolution-bug
+              Look at TpmTools\Get-PcrValue to induce vomiting.
+
+  • But for real how come ISE needs to dot-source into the Global scope? I know where the dot button is. I only want consistency.
+      And when do we get auto-variables? I'm wearing out my alt+F4 keys.
+
+  • Don't look at encodings.
+      Literally don't look at them--psV5.1 jams a BOM everywhere. See: IniTools\Out-IniFile for a (poor) workaround.
+          https://stackoverflow.com/questions/5596982/using-powershell-to-write-a-file-in-utf-8-without-the-bom
+
+  • Invoke-Command is evil:
+      https://stackoverflow.com/questions/4225748/how-do-i-pass-named-parameters-with-invoke-command
+          You've been warned.
+
+  • Just use C#.
+      https://xainey.github.io/2016/powershell-classes-and-concepts/
+          ^BUT THEY DON'T WORK
+              https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_using?view=powershell-5.1
+              https://github.com/PowerShell/PowerShell/issues/7654
+                  ^????
+              https://stackoverflow.com/questions/39426477/how-do-i-force-powershell-to-reload-a-custom-module
+
+              https://github.com/PowerShell/PowerShell/issues/9886
+                  ^ here's a totally unrelated problem with the 'Using' keyword lol check out the TpmTools module for my hatchet job
+
+  • Keep msdn pinned for everything related to automatic variables.
+      https://github.com/PowerShell/PowerShell/issues/4394
+
+  • Please don't backtick. I know it's fun and it looks nice but a puppy dies when you use it. Even in strings; @''@ saves lives.
+      https://get-powershellblog.blogspot.com/2017/07/bye-bye-backtick-natural-line.html
+
+  • And don't touch $MyInvocation.
+      ○ old
+      ○ broken
+      ○ bad
+      ○ mean
+      ○ very upsetting
+      ○ doesn't even work
+      ○ what did I say
+      ○ when you inevitably require it all the time, qq here:
+           > this was never fun
+           > i must be a masochist
+           > why god
+           > 
+
+tldr; kms ecks dee just learn Bash bottom text -wm
+  https://github.com/powershell/powershell/issues
