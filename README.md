@@ -1,7 +1,7 @@
 # ttddtor
 things that don't deserve their own repo
 
-  __profile.ps1__
+##  __profile.ps1__
   
 My standard profile. Includes features such as:
 
