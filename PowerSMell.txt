@@ -77,6 +77,11 @@ Landmines:
           Seriously and vsC is special too at least there's Pester
               (which ALSO hacks around this)
 
+  • A bunch of the default modules are subtly broken in ways that will bite you when you least expect.
+      ○ Export-ScheduledTask does NOT capture all task settings for some reason.
+          For instance, the execution limit setting will be wrong if you directly export a task.
+          You need to pipe Get-ScheduledTask to Export-ScheduledTask, and then it works.
+
   • CIL/CLR/CLS(wtf) noncompliance makes me sad.
       Basically only sort-of m$'s fault but this is my txt file, fite me
 
