@@ -109,7 +109,136 @@ else
 fi
 echo $text
 
+hypr/bindings.conf
+# Application bindings
+bindd = SUPER, RETURN, Terminal, exec, uwsm-app -- xdg-terminal-exec --dir="$(omarchy-cmd-terminal-cwd)"
+bindd = SUPER SHIFT, F, File manager, exec, omarchy-launch-tui vifm
+bindd = SUPER SHIFT, B, Browser, exec, omarchy-launch-browser
+bindd = SUPER SHIFT ALT, B, Browser (private), exec, omarchy-launch-browser --private
+bindd = SUPER SHIFT, M, Music, exec, omarchy-launch-or-focus spotify
+bindd = SUPER SHIFT, N, Editor, exec, omarchy-launch-editor
+bindd = SUPER SHIFT, T, Activity, exec, omarchy-launch-tui btop
+bindd = SUPER SHIFT, D, Docker, exec, omarchy-launch-tui lazydocker
+bindd = SUPER SHIFT, G, Signal, exec, omarchy-launch-or-focus ^signal$ "uwsm-app -- signal-desktop"
+bindd = SUPER SHIFT, O, Obsidian, exec, omarchy-launch-or-focus ^obsidian$ "uwsm-app -- obsidian -disable-gpu --enable-wayland-ime"
+bindd = SUPER SHIFT, W, Typora, exec, uwsm-app -- typora --enable-wayland-ime
+bindd = SUPER SHIFT, SLASH, Passwords, exec, uwsm-app -- 1password
 
+# If your web app url contains #, type it as ## to prevent hyprland treating it as a comment
+#bindd = SUPER SHIFT, A, ChatGPT, exec, omarchy-launch-webapp "https://chatgpt.com"
+#bindd = SUPER SHIFT ALT, A, Grok, exec, omarchy-launch-webapp "https://grok.com"
+bindd = SUPER SHIFT, C, Calendar, exec, omarchy-launch-webapp "https://app.hey.com/calendar/weeks/"
+bindd = SUPER SHIFT, E, Email, exec, omarchy-launch-webapp "https://app.hey.com"
+#bindd = SUPER SHIFT, Y, YouTube, exec, omarchy-launch-webapp "https://youtube.com/"
+#bindd = SUPER SHIFT ALT, G, WhatsApp, exec, omarchy-launch-or-focus-webapp WhatsApp "https://web.whatsapp.com/"
+#bindd = SUPER SHIFT CTRL, G, Google Messages, exec, omarchy-launch-or-focus-webapp "Google Messages" "https://messages.google.com/web/conversations"
+#bindd = SUPER SHIFT, P, Google Photos, exec, omarchy-launch-or-focus-webapp "Google Photos" "https://photos.google.com/"
+#bindd = SUPER SHIFT, X, X, exec, omarchy-launch-webapp "https://x.com/"
+#bindd = SUPER SHIFT ALT, X, X Post, exec, omarchy-launch-webapp "https://x.com/compose/post"
+
+# Overwrite existing bindings, like putting Omarchy Menu on Super + Space
+# unbind = SUPER, SPACE
+# bindd = SUPER, SPACE, Omarchy menu, exec, omarchy-menu
+
+
+hypr/hypridle.conf
+general {
+    lock_cmd = omarchy-lock-screen                         # lock screen and 1password
+    before_sleep_cmd = loginctl lock-session               # lock before suspend.
+    after_sleep_cmd = hyprctl dispatch dpms on             # to avoid having to press a key twice to turn on the display.
+    inhibit_sleep = 3                                      # wait until screen is locked
+}
+
+listener {
+    listener {
+    timeout = 150                                             # 2.5min
+    on-timeout = sh -c 'if cat /sys/class/power_supply/AC/online 2>/dev/null; then :; else hyprctl dispatch dpms off; fi'
+    on-resume = hyprctl dispatch dpms on && brightnessctl -r # screen on when activity is detected
+    }
+    # timeout = 150                                             # 2.5min
+    # on-timeout = pidof hyprlock || omarchy-launch-screensaver # start screensaver (if we haven't locked already)
+}
+
+listener {
+    timeout = 300                      # 5min
+    on-timeout = sh -c 'if cat /sys/class/power_supply/AC/online 2>/dev/null; then :; else loginctl lock-session; fi'
+    # on-timeout = loginctl lock-session # lock screen when timeout has passed
+}
+
+listener {
+    timeout = 330                                            # 5.5min
+    on-timeout = sh -c 'if cat /sys/class/power_supply/AC/online 2>/dev/null; then :; else hyprctl dispatch dpms off; fi'
+    # on-timeout = hyprctl dispatch dpms off                   # screen off when timeout has passed
+    on-resume = hyprctl dispatch dpms on && brightnessctl -r # screen on when activity is detected
+}
+
+hypr/hyprland.conf
+# Learn how to configure Hyprland: https://wiki.hyprland.org/Configuring/
+
+# Use defaults Omarchy defaults (but don't edit these directly!)
+source = ~/.local/share/omarchy/default/hypr/autostart.conf
+source = ~/.local/share/omarchy/default/hypr/bindings/media.conf
+source = ~/.local/share/omarchy/default/hypr/bindings/clipboard.conf
+source = ~/.local/share/omarchy/default/hypr/bindings/tiling-v2.conf
+source = ~/.local/share/omarchy/default/hypr/bindings/utilities.conf
+source = ~/.local/share/omarchy/default/hypr/envs.conf
+source = ~/.local/share/omarchy/default/hypr/looknfeel.conf
+source = ~/.local/share/omarchy/default/hypr/input.conf
+source = ~/.local/share/omarchy/default/hypr/windows.conf
+source = ~/.config/omarchy/current/theme/hyprland.conf
+
+# Change your own setup in these files (and overwrite any settings from defaults!)
+source = ~/.config/hypr/monitors.conf
+source = ~/.config/hypr/input.conf
+source = ~/.config/hypr/bindings.conf
+source = ~/.config/hypr/looknfeel.conf
+source = ~/.config/hypr/autostart.conf
+
+# Add any other personal Hyprland configuration below
+# windowrule = workspace 5, class:qemu
+
+# NVIDIA environment variables
+env = NVD_BACKEND,direct
+env = LIBVA_DRIVER_NAME,nvidia
+env = __GLX_VENDOR_LIBRARY_NAME,nvidia
+
+# Custom rules
+windowrule = tag +floating-window, title:(com.omarchy.netpala)
+
+# Autostart on boot
+exec-once = ghostty -e fastfetch --config neofetch --dynamic-interval 3600000
+exec-once = ghostty -e btop
+
+hypr/looknfeel.conf
+# Change the default Omarchy look'n'feel
+
+# https://wiki.hyprland.org/Configuring/Variables/#general
+general {
+    # No gaps between windows or borders
+    gaps_in = 1
+    gaps_out = 1
+    # border_size = 0
+
+    # Use master layout instead of dwindle
+    # layout = master
+}
+
+# https://wiki.hyprland.org/Configuring/Variables/#decoration
+decoration {
+    # Use round window corners
+    # rounding = 8
+}
+
+# https://wiki.hypr.land/Configuring/Dwindle-Layout/
+dwindle {
+    # Avoid overly wide single-window layouts on wide screens
+    # single_window_aspect_ratio = 1 1
+}
+
+
+MONITORS:
+env = GDK_SCALE,1
+monitor=,preferred,auto,1
 
 !!! TODO !!!
 openvpn
