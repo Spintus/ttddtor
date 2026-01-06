@@ -1,0 +1,127 @@
+Install
+Update
+Debloat
+  i dont like AI
+  or standard chromium
+
+Hackerman theme
+openvpn
+  custom vyprvpn conf
+    !!! AUTH FIX TODO !!!
+  systemd start openvpn-client at startup as service
+  custom/vpn waybar plugin for openvpn service management
+    !!! TODO !!! features see TODO
+screensaver
+  custom hypridle conf to poll AC status
+    disable screensaver/lock on AC connected
+ungoogled-chromium
+  build from source lmao (18hrs)
+    or just pull the binary
+  Allow Manifest v2 fuck you alphabet
+    ~/.config/chromium/chromium.local
+      --disable-features=ExtensionManifestV2Unsupported,ExtensionManifestV2Disabled
+  extensions
+    uBlock Origin
+    uMatrix
+    SponsorBlock
+    YoutubeShortsRemove
+youtube-dl-gui
+  custom scaling?
+    Electron custom scaling !!! NOT WORKING !!!
+lazyVPN-for-Omarchy
+steam
+  custom scaling
+    ~/.local/share/Steam/steam.local
+      -forcedesktopscaling 0.5
+qbittorrent
+  Absinthe theme because eye rape
+waybar rice on startup
+  btop
+  fastfetch
+vifm
+  custom keybinds etc from Arch man
+  nvim
+  .ignores
+  hypr/keybindings.conf
+rmpc
+  !!! TODO !!! customization?
+qpwgraph
+undotree
+telescope
+yazi
+harpoon
+tmux
+minhypr
+hypr uncommon tips and tricks
+rofi
+hyprrice
+https://www.privateinternetaccess.com/order?plan=36m&product=ZyJAsHQYEwHNCgU31I3A9Egma6SGM8X1Q-yFlbYwM9fVy8DUrnakLJkOmmOiV3bc&X=
+https://www.acciyo.com/getting-your-private-internet-access-wireguard-config-file-a-step-by-step-guide/
+https://www.vpnmentor.com/vpn-comparison/private-internet-access-vs-vyprvpn/
+https://wiki.archlinux.org/title/Private_Internet_Access
+https://www.reddit.com/r/PrivateInternetAccess/comments/zn3708/wireguard_config/
+https://github.com/triffid/pia-wg/blob/master/pia-wg.sh
+https://github.com/pia-foss/manual-connections
+
+
+waybar config.jsonc
+
+  "custom/vpn": {
+    "format": "{}  ",
+    "exec": "bash /home/user/.config/sway/tools/vpnupdown status",
+    // "exec-if": "test -d /proc/sys/net/ipv4/conf/tun0",
+    "tooltip": "true",
+    "return-type": "json",
+    "interval": 1,
+    "on-click": "bash /home/user/.config/sway/tools/vpnupdown toggle"
+  },
+
+sway/tools/vpnupdown
+
+# ******************************************************** #
+#                                                          #
+#                                                          #
+#    vpnupdown                                             #
+#                                                          #
+#    By: Raffael Willems <Raffael.Willems@im-c.de>         #
+#                                                          #
+#    Created: 2023/12/06 13:46:41 by Raffael Willems       #
+#    Updated: 2023/12/06 21:48:41 by Raffael Willems       #
+#                                                          #
+# ******************************************************** #
+
+#!/bin/bash
+
+STATUS="$(systemctl is-active openvpn-client@openvpn.service)"
+if [ "${STATUS}" = "inactive" ]; then
+  if [ $1 = 'toggle' ]; then
+    systemctl start openvpn-client@openvpn.service
+    text="{\"text\":\"󱠽 \",\"class\":\"enabled\"}"
+  fi
+  text="{\"text\":\"󱠾 \",\"tooltip\":\"imc closed\"}"
+else
+  if [ $1 = 'toggle' ]; then
+    systemctl stop openvpn-client@openvpn.service
+    text="{\"text\":\"󱠾 \",\"tooltip\":\"imc closed\"}"
+  fi
+  ADDR="$(ip -br addr show dev tun0 | awk '{ print $3 }')"
+  text="{\"text\":\"󱠽 \",\"class\":\"enabled\",\"tooltip\":\"$ADDR\"}"
+fi
+echo $text
+
+
+
+!!! TODO !!!
+openvpn
+  AUTHENTICATION FOR CUSTOM CLIENT
+    safe login (NO TXT CREDS)
+  GUI for waybar plugin
+  ???Filter-based .ovpn config selection?
+    portable credential management
+ungoogled-chromium
+  cached for fast startup?
+    maybe unnecessary with ungoogled. TBD
+
+!!! CHECK OUT !!!
+  
+
